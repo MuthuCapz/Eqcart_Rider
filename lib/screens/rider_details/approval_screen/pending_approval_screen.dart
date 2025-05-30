@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../utils/colors.dart';
 import '../../main/main_page.dart';
+import 'approval_comfirmed_screen.dart';
 
 class PendingApprovalScreen extends StatefulWidget {
   const PendingApprovalScreen({super.key});
@@ -45,7 +46,7 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
   void _navigateToMainPage() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const MainPage()),
+      MaterialPageRoute(builder: (context) => const ApprovalConfirmedScreen()),
     );
   }
 

@@ -2,10 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:eqcart_rider/screens/rider_details/rider_details_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../services/auth_service.dart';
 import '../login/login_page.dart';
 import '../main/main_page.dart';
+import '../rider_details/approval_screen/approval_comfirmed_screen.dart';
 import '../rider_details/approval_screen/pending_approval_screen.dart';
 
 class SplashScreen extends StatelessWidget {
@@ -69,10 +71,30 @@ class SplashScreen extends StatelessWidget {
                             ),
                           );
                         } else if (status == 'approved') {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => MainPage()),
-                          );
+                          final prefs = await SharedPreferences.getInstance();
+                          final isConfirmedShown =
+                              prefs.getBool('approvalConfirmedShown') ?? false;
+
+                          if (!isConfirmedShown) {
+                            // First time: show approval confirmation screen
+                            await prefs.setBool('approvalConfirmedShown', true);
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) =>
+                                        const ApprovalConfirmedScreen(),
+                              ),
+                            );
+                          } else {
+                            // Subsequent times: go directly to main page
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const MainPage(),
+                              ),
+                            );
+                          }
                         } else {
                           // Handle unknown status or fallback
                           ScaffoldMessenger.of(context).showSnackBar(
