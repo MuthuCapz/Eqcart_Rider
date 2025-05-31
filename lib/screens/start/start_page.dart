@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/auth_service.dart';
 import '../login/login_page.dart';
 import '../main/main_page.dart';
+import '../map_pages/map_page.dart';
 import '../rider_details/approval_screen/approval_comfirmed_screen.dart';
 import '../rider_details/approval_screen/pending_approval_screen.dart';
 
@@ -91,7 +92,7 @@ class SplashScreen extends StatelessWidget {
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const MainPage(),
+                                builder: (context) => const MapPage(),
                               ),
                             );
                           }
