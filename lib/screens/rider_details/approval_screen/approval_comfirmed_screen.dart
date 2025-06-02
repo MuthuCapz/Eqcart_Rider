@@ -1,5 +1,6 @@
+import 'package:eqcart_rider/screens/map_pages/map_page.dart';
 import 'package:flutter/material.dart';
-import '../../main/main_page.dart';
+
 import '../../../utils/colors.dart';
 
 class ApprovalConfirmedScreen extends StatefulWidget {
@@ -17,7 +18,7 @@ class _ApprovalConfirmedScreenState extends State<ApprovalConfirmedScreen> {
     Future.delayed(const Duration(seconds: 2), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const MainPage()),
+        MaterialPageRoute(builder: (context) => const MapPage()),
       );
     });
   }
