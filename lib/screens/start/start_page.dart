@@ -61,8 +61,8 @@ class SplashScreen extends StatelessWidget {
                               .get();
 
                       if (riderDoc.exists) {
-                        final status =
-                            riderDoc.data()?['approval_status'] ?? '';
+                        final data = riderDoc.data();
+                        final status = data?['approval_status'] ?? '';
 
                         if (status == 'pending') {
                           Navigator.pushReplacement(
@@ -88,16 +88,34 @@ class SplashScreen extends StatelessWidget {
                               ),
                             );
                           } else {
-                            // Subsequent times: go directly to main page
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const MapPage(),
-                              ),
-                            );
+                            final addressData = data?['address'] ?? {};
+                            final mapLocation = addressData['map'];
+                            final matchedShops =
+                                addressData['matched_shop_ids'];
+
+                            final bool goToMainPage =
+                                mapLocation != null &&
+                                matchedShops != null &&
+                                matchedShops is List &&
+                                matchedShops.isNotEmpty;
+
+                            if (goToMainPage) {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => MainPage(),
+                                ),
+                              );
+                            } else {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const MapPage(),
+                                ),
+                              );
+                            }
                           }
                         } else {
-                          // Handle unknown status or fallback
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
@@ -107,7 +125,6 @@ class SplashScreen extends StatelessWidget {
                           );
                         }
                       } else {
-                        // Handle missing rider document
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
@@ -122,6 +139,7 @@ class SplashScreen extends StatelessWidget {
                       );
                     }
                   },
+
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green.withOpacity(0.8),
                     shadowColor: Colors.transparent,

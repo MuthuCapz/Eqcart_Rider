@@ -8,6 +8,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../utils/colors.dart';
+import 'no_shop_nearby_page.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -112,7 +113,7 @@ class _MapPageState extends State<MapPage> {
                           final user = FirebaseAuth.instance.currentUser;
                           if (user == null) return;
 
-                          // Reverse geocoding to get readable address
+                          // 1. Reverse geocoding
                           List<Placemark> placemarks =
                               await placemarkFromCoordinates(
                                 _currentLatLng!.latitude,
@@ -126,25 +127,88 @@ class _MapPageState extends State<MapPage> {
                                 "${place.street}, ${place.locality}, ${place.administrativeArea}, ${place.postalCode}";
                           }
 
-                          // Save inside 'address' map field
+                          List<String> matchedShopIds = [];
+
+                          // Helper function to process both collections
+                          Future<void> checkShops(
+                            String settingsCol,
+                            String shopsCol,
+                          ) async {
+                            final settingsSnap =
+                                await FirebaseFirestore.instance
+                                    .collection(settingsCol)
+                                    .get();
+
+                            for (var doc in settingsSnap.docs) {
+                              final shopId = doc.id;
+                              final riderDistance =
+                                  double.tryParse(
+                                    doc.data()['riderDistance'].toString(),
+                                  ) ??
+                                  0;
+
+                              if (riderDistance == 0) continue;
+
+                              final shopDoc =
+                                  await FirebaseFirestore.instance
+                                      .collection(shopsCol)
+                                      .doc(shopId)
+                                      .get();
+
+                              final shopLocation = shopDoc.data()?['location'];
+                              if (shopLocation == null) continue;
+
+                              double shopLat = shopLocation['latitude'];
+                              double shopLng = shopLocation['longitude'];
+
+                              double distanceInMeters =
+                                  Geolocator.distanceBetween(
+                                    _currentLatLng!.latitude,
+                                    _currentLatLng!.longitude,
+                                    shopLat,
+                                    shopLng,
+                                  );
+
+                              if (distanceInMeters <= riderDistance * 1000) {
+                                matchedShopIds.add(shopId);
+                              }
+                            }
+                          }
+
+                          // 2. Check both 'shops_settings' and 'own_shops_settings'
+                          await checkShops('shops_settings', 'shops');
+                          await checkShops('own_shops_settings', 'own_shops');
+
+                          // 3. Save address and matched shop IDs to Firestore
                           await FirebaseFirestore.instance
                               .collection('riders_info')
                               .doc(user.uid)
                               .set({
                                 'address': {
                                   'address': readableAddress,
-                                  'lati': _currentLatLng!.latitude,
-                                  'longi': _currentLatLng!.longitude,
+                                  'latitude': _currentLatLng!.latitude,
+                                  'longitude': _currentLatLng!.longitude,
                                   'createDateTime':
                                       FieldValue.serverTimestamp(),
+                                  'matched_shop_ids': matchedShopIds,
                                 },
                               }, SetOptions(merge: true));
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const MainPage(),
-                            ),
-                          );
+
+                          if (matchedShopIds.isEmpty) {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const NoShopsNearbyPage(),
+                              ),
+                            );
+                          } else {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const MainPage(),
+                              ),
+                            );
+                          }
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
