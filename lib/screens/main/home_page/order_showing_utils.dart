@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
 import '../../../utils/colors.dart';
 
 class OrderCardUtils {
@@ -38,28 +37,7 @@ class OrderCardUtils {
         padding: const EdgeInsets.symmetric(horizontal: 10),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
       ),
-      child: Text(label),
+      child: Text(label, style: const TextStyle(fontSize: 12)),
     );
-  }
-
-  static Color getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'pending':
-        return Colors.orange;
-      case 'accepted':
-        return Colors.blue;
-      case 'preparing':
-        return Colors.purple;
-      case 'ready for pickup':
-        return Colors.green;
-      case 'on the way':
-        return Colors.teal;
-      case 'delivered':
-        return Colors.green[800]!;
-      case 'cancelled':
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
   }
 }
