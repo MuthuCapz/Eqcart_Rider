@@ -44,7 +44,43 @@ class MorePage extends StatelessWidget {
           ListTile(
             leading: Icon(Icons.logout, color: AppColors.secondaryColor),
             title: Text('Logout', style: TextStyle(color: Colors.black)),
-            onTap: () async {
+            onTap: () {
+              showLogoutConfirmationDialog(context);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+Future<void> showLogoutConfirmationDialog(BuildContext context) async {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+        title: const Text(
+          "Logout",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          "Are you sure you want to logout?",
+          style: TextStyle(fontSize: 18),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              "No",
+              style: TextStyle(fontSize: 18, color: Colors.red),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context); // Close the dialog
               await FirebaseAuth.instance.signOut();
               await GoogleSignIn().signOut();
               Navigator.pushReplacement(
@@ -52,9 +88,13 @@ class MorePage extends StatelessWidget {
                 MaterialPageRoute(builder: (context) => LoginPage()),
               );
             },
+            child: Text(
+              "Yes",
+              style: TextStyle(fontSize: 18, color: Colors.green[900]),
+            ),
           ),
         ],
-      ),
-    );
-  }
+      );
+    },
+  );
 }
